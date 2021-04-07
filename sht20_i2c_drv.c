@@ -14,6 +14,10 @@
 #define SHT20_HUMIDITY_NO_HOLD_ADDRESS 0xF5
 
 static struct class *sht20_class = NULL;
+
+/* sht20 mutex */
+struct mutex sh20_clients_lock;
+
 static dev_t dev = 0;
 
 /* sht20 character device struct*/
@@ -118,6 +122,14 @@ static ssize_t sht20_i2c_read(struct file *filp, char __user *buf, size_t count,
     	pr_err("Failed to get struct i2c_client.\n");
 	    return -EINVAL;
     }
+    /* Initialize buffer space */
+    buf[0] = 0;
+    buf[1] = 0;
+    buf[2] = 0;
+    buf[3] = 0;
+ 
+    /* Mutex for prevent mutiuser */
+    mutex_lock(&sh20_clients_lock);
 
     /* If obtain temperature success, status equal zero.*/
     status = read_temperature(client, tmp);
@@ -133,6 +145,8 @@ static ssize_t sht20_i2c_read(struct file *filp, char __user *buf, size_t count,
         buf[2] = tmp[0];
         buf[3] = tmp[1];
     }
+
+    mutex_unlock(&sh20_clients_lock);
 
     return 0;
 }
@@ -174,6 +188,9 @@ static int sht20_probe(struct i2c_client *client, const struct i2c_device_id *id
 
     i2c_set_clientdata(client, sht20);
 
+    /* Initialize mutex */
+    mutex_init(&sh20_clients_lock);
+
     return 0;
   
 }
@@ -202,5 +219,6 @@ static struct i2c_driver sht20_drv = {
     },
 };
 
+MODULE_AUTHOR("Bohung Nian <n0404.n0404 at="" gmail.com="">");
 module_i2c_driver(sht20_drv);
 MODULE_LICENSE("GPL");
