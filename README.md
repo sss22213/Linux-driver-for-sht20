@@ -44,4 +44,4 @@
 
 Temperature(°C) = 0xa0b / 100
 
-Humidity(RH) =  0xc0b / 100 %
+Humidity(RH %) =  0xc0b / 100
