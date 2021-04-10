@@ -163,7 +163,7 @@ static int sht20_probe(struct i2c_client *client, const struct i2c_device_id *id
 
     struct device *device = NULL;
 
-    pr_info("Probe device.\n");
+    pr_info("Probe device of sht20.\n");
 
     /* Alloc space for cdev */
     alloc_chrdev_region(&dev, 0, 1, SHT20_DEV_NAME);
@@ -197,7 +197,13 @@ static int sht20_probe(struct i2c_client *client, const struct i2c_device_id *id
 
 static int sht20_remove(struct i2c_client *client)
 {
-    pr_info("sht20 device is removing.\n");
+    pr_info("Remove device of sht20.\n");
+
+    device_destroy(sht20_class, dev);
+
+    class_destroy(sht20_class);
+
+    unregister_chrdev_region(dev, 1);
 
     return 0;
 }
